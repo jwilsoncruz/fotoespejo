@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu foto</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:ital,wght@1,700&display=swap">
+<style>
+:root{--g:#d9ad45}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 30%,#1c1a26,#050507);color:#fff;font-family:Montserrat,system-ui,sans-serif;display:flex;justify-content:center}
+main{width:min(94vw,480px);padding:20px 0 40px;text-align:center}
+#ev{font-family:"Playfair Display",Georgia,serif;font-style:italic;font-size:26px;color:var(--g);margin:6px 0 14px}
+#box{border:1px solid var(--g);border-radius:10px;padding:8px;background:#0b0b10}
+#im{width:100%;display:block;border-radius:6px}
+#st{padding:60px 10px;opacity:.8}
+.btn{display:inline-block;margin:14px 6px 0;padding:14px 26px;border-radius:99px;border:1.5px solid var(--g);background:none;color:#fff;font:600 14px Montserrat,sans-serif;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;cursor:pointer}
+.btn.main{background:var(--g);color:#111}
+#tip{font-size:12px;opacity:.6;margin-top:16px}
+</style>
+</head>
+<body>
+<main>
+  <div id="ev"></div>
+  <div id="box"><div id="st">Cargando tu foto...</div><img id="im" alt="Tu foto" hidden></div>
+  <div id="acts" hidden><a id="dl" class="btn main" download="mi-foto.jpg">Descargar foto</a><button id="sh" class="btn">Compartir</button></div>
+  <p id="tip" hidden>Si no se descarga, mantén presionada la foto y elige "Guardar imagen".</p>
+</main>
+<script>
+const P="fotoespejo-13a05",K="AIzaSyDV8jvpn1p-3IXoa1Im7dmPCJxU6JoXajk",$=id=>document.getElementById(id);
+(async()=>{
+  const id=new URLSearchParams(location.search).get("id");
+  if(!id){$("st").textContent="Enlace incompleto. Escanea de nuevo el código QR.";return}
+  try{
+    const r=await fetch("https://firestore.googleapis.com/v1/projects/"+P+"/databases/(default)/documents/fotos/"+encodeURIComponent(id)+"?key="+K);
+    if(!r.ok)throw new Error(r.status);
+    const j=await r.json(),u=j.fields.img.stringValue,ev=j.fields.evento&&j.fields.evento.stringValue;
+    $("im").src=u;$("im").hidden=false;$("st").hidden=true;
+    if(ev)$("ev").textContent=ev;
+    const blob=await (await fetch(u)).blob();
+    $("dl").href=URL.createObjectURL(blob);
+    $("acts").hidden=false;$("tip").hidden=false;
+    const file=new File([blob],"mi-foto.jpg",{type:"image/jpeg"});
+    if(navigator.canShare&&navigator.canShare({files:[file]}))$("sh").onclick=()=>navigator.share({files:[file],title:ev||"Mi foto"}).catch(()=>{});
+    else $("sh").hidden=true;
+  }catch(e){$("st").textContent="No encontramos esta foto. Pide ayuda en el fotoespejo."}
+})();
+</script>
+</body>
+</html>
