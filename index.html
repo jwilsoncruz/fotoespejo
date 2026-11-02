@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fotoespejo Premium</title>
+<link rel="icon" id="ic" href="data:,">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,700;1,700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,700&display=swap">
 <style>
 :root{--g:#d9ad45;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-html,body{height:100%;margin:0;color:#fff;font-family:Montserrat,system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;user-select:none;background:radial-gradient(circle at 50% 40%,#1c1a26,#050507)}
+html,body{height:100%;margin:0;color:#fff;font-family:Montserrat,system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden;user-select:none;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--bgc,#050507) 90%,#fff),var(--bgc,#050507))}
 #stage{height:100%;display:flex;align-items:center;justify-content:center}
 #box{position:relative;height:100%;aspect-ratio:2/3;max-width:100%;overflow:hidden;background:#000;container-type:inline-size;box-shadow:0 0 80px rgba(0,0,0,.8)}
 video,#ov{position:absolute;inset:0;width:100%;height:100%}
@@ -26,7 +27,7 @@ button.main{background:var(--g);color:#111;font-weight:600}
 .cw{position:relative;width:36cqw;height:36cqw;display:flex;align-items:center;justify-content:center}
 .cw svg{position:absolute;inset:0;transform:rotate(-90deg)}
 .cw circle{fill:none;stroke:var(--g);stroke-width:2.5;stroke-dasharray:339.3;stroke-dashoffset:0}
-#num{font-family:"Playfair Display",Georgia,serif;font-size:22cqw;line-height:1;text-shadow:0 4px 30px #000}
+#num{font-family:"Playfair Display",Georgia,serif;font-size:22cqw;line-height:1;color:var(--numc,#fff);text-shadow:0 4px 30px #000}
 #count.tick circle{animation:ring 1s linear}#count.tick #num{animation:pop 1s ease-out}
 @keyframes ring{to{stroke-dashoffset:339.3}}@keyframes pop{0%{transform:scale(1.35);opacity:0}25%{transform:scale(1);opacity:1}100%{opacity:.7}}
 #flash{background:#fff;opacity:0;pointer-events:none}
@@ -88,7 +89,7 @@ const FONTS=["Bodoni Moda","Playfair Display","DM Serif Display","Cormorant Gara
 const TH={oro:{n:"Oro clásico",g:["#fbefc0","#d9ad45","#8f6a22"],tx:"#fff8e6"},rosa:{n:"Rosa champán",g:["#ffe6ec","#f0a9bf","#b56580"],tx:"#fff3f6"},plata:{n:"Plata",g:["#ffffff","#cfd4dc","#7e8794"],tx:"#ffffff"},azul:{n:"Azul noche",g:["#e0efff","#86b5ea","#3a669f"],tx:"#f2f8ff"}};
 const def={tpl:"revista",t:"Tu nombre",head:"Mis XV años",date:"Abril 2027",tag:"Edición especial",mast:"LUXE",mastFont:"Bodoni Moda",mw:88,nameFont:"Bodoni Moda",dark:55,
  l1:"INOLVIDABLE|La noche que todos recordarán",l2:"GLAMOUR|Estilo y elegancia",l3:"15 AÑOS|Una historia que brilla",l4:"EXCLUSIVO|Solo en esta edición",
- mastColor:"#ffffff",nameColor:"#ffffff",accent:"#f2d27a",txt:"#ffffff",th:"oro",price:"Escanéame",cor:"qr",qr:"https://tu-sitio.com",view:"",b:"",n:3,logo:"",pin:""};
+ mastColor:"#ffffff",nameColor:"#ffffff",accent:"#f2d27a",txt:"#ffffff",th:"oro",price:"Escanéame",cor:"qr",qr:"https://tu-sitio.com",view:"",fav:"📸",ptitle:"Fotoespejo",bgc:"#050507",ui:"#f2d27a",numc:"#ffffff",shade:"#000000",qrFg:"#000000",qrBg:"#ffffff",b:"",n:3,logo:"",pin:""};
 let S={...def};
 try{const s=localStorage.getItem("fe_cfg3");if(s)S={...def,...JSON.parse(s)}}catch(e){}
 let CUR=S,D={...S},admin=false,unlocked=false;
@@ -111,9 +112,10 @@ function barcode(x,x0,y0,label,seed,tc){
   x.fillText(d[0]+"  "+d.slice(1,7).join("")+"  "+d.slice(7).join(""),x0+pad+bw/2,y0+hh+30);
   if(label)txt(x,label,x0+bw+2*pad+22,y0+(hh+50)/2,"600 28px Montserrat,sans-serif",tc,4,300,"left");
 }
+const hx=(h,a)=>{const n=parseInt(h.slice(1),16);return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")"};
 function drawMag(x,W,H){
   const c=CUR,a=c.dark/100,g=x.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgba(0,0,0,"+a*.7+")");g.addColorStop(.3,"rgba(0,0,0,0)");g.addColorStop(.55,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(0,0,0,"+a+")");
+  g.addColorStop(0,hx(c.shade,a*.7));g.addColorStop(.3,hx(c.shade,0));g.addColorStop(.55,hx(c.shade,0));g.addColorStop(1,hx(c.shade,a));
   x.fillStyle=g;x.fillRect(0,0,W,H);
   const mwid=W*c.mw/100,ms=fit(x,c.mast,c.mastFont,"",mwid,W*.3),my=H*.065+ms*.32;
   txt(x,c.mast,W/2,my,"700 "+ms+"px '"+c.mastFont+"',serif",c.mastColor,0,mwid+10);
@@ -130,7 +132,7 @@ function drawMag(x,W,H){
   txt(x,(c.head||"").toUpperCase(),W/2,ny+ns*.62,"500 "+Math.round(W*.032)+"px Montserrat,sans-serif",c.accent,10,W*.86);
   const by=H-190;
   const bx=Math.round(W*.07);
-  if(c.cor==="qr"&&c.qr&&typeof qrcode!=="undefined"){try{const q=qrcode(0,"M");q.addData(c.qr);q.make();const n=q.getModuleCount(),cs=Math.max(3,Math.floor(150/n)),sz=n*cs,qy=H-240;x.fillStyle="#fff";x.fillRect(bx,qy,sz+24,sz+24);x.fillStyle="#000";for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(bx+12+k*cs,qy+12+r*cs,cs,cs);txt(x,c.price||"",bx+sz+44,qy+(sz+24)/2,"600 "+Math.round(W*.026)+"px Montserrat,sans-serif",c.txt,4,W*.3,"left")}catch(e){}}
+  if(c.cor==="qr"&&c.qr&&typeof qrcode!=="undefined"){try{const q=qrcode(0,"M");q.addData(c.qr);q.make();const n=q.getModuleCount(),cs=Math.max(3,Math.floor(150/n)),sz=n*cs,qy=H-240;x.fillStyle=c.qrBg;x.fillRect(bx,qy,sz+24,sz+24);x.fillStyle=c.qrFg;for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(bx+12+k*cs,qy+12+r*cs,cs,cs);txt(x,c.price||"",bx+sz+44,qy+(sz+24)/2,"600 "+Math.round(W*.026)+"px Montserrat,sans-serif",c.txt,4,W*.3,"left")}catch(e){}}
   else if(c.cor==="barcode")barcode(x,bx,by-40,c.price||"",c.t+c.head,c.txt);
   const L=logo(c);if(L){const r=Math.min(260/L.naturalWidth,90/L.naturalHeight),w=L.naturalWidth*r,h=L.naturalHeight*r;x.drawImage(L,W*.93-w,by+10,w,h)}
   if(c.b)txt(x,c.b.toUpperCase(),W*.93,H-70,sf,c.txt,5,W*.5,"right");
@@ -157,7 +159,7 @@ function drawFrame(x,W,H){
   x.fillStyle=sh;x.fillRect(0,H*.62,W,H*.38);frame(x,W,H,26,54);caption(x,W,H-300,120);
 }
 function drawOv(){const k=CUR;CUR=S;const c=$("ov"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);drawFrame(x,c.width,c.height);CUR=k}
-function apply(){document.documentElement.style.setProperty("--g",S.tpl==="revista"?S.accent:TH[S.th].g[1]);drawOv()}
+function apply(){const r=document.documentElement.style;r.setProperty("--g",S.ui);r.setProperty("--bgc",S.bgc);r.setProperty("--numc",S.numc);document.title=S.ptitle||"Fotoespejo";document.getElementById("ic").href="data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+(S.fav||"📸")+"</text></svg>");drawOv()}
 apply();
 Promise.all(FONTS.flatMap(f=>['700 40px "'+f+'"','italic 700 40px "'+f+'"'].map(s=>document.fonts.load(s)))).then(()=>{drawOv();if(admin)pvDraw()}).catch(()=>{});
 const v=$("v");
@@ -225,13 +227,13 @@ const FS=FONTS.map(f=>[f,f]);
 const F=[["sec","Evento"],["t","Nombre del agasajado o del evento corporativo","text"],["head","Línea bajo el nombre (ej: Mis XV años, Aniversario 10 años)","text"],["date","Fecha o edición","text"],["tag","Frase superior (opcional)","text"],
 ["sec","Portada de revista"],["tpl","Plantilla","select",[["revista","Revista editorial"],["clasico","Clásico con marco"]]],["mast","Nombre de la revista","text"],["mastFont","Letra de la revista","select",FS],["mw","Ancho del título de la revista","range",[40,95]],["nameFont","Letra del nombre y titulares","select",FS],["dark","Oscurecer la foto (para leer mejor)","range",[0,90]],
 ["sec","Titulares (formato TÍTULO|descripción)"],["l1","Titular 1 (izquierda)","text"],["l2","Titular 2 (izquierda)","text"],["l3","Titular 3 (derecha)","text"],["l4","Titular 4 (derecha)","text"],
-["sec","Colores"],["mastColor","Color de la revista","color"],["nameColor","Color del nombre","color"],["accent","Color de acento","color"],["txt","Color de textos","color"],["th","Estilo del marco clásico","select",Object.keys(TH).map(k=>[k,TH[k].n])],
-["sec","Extras"],["cor","Código en la esquina de la portada","select",[["qr","Código QR"],["barcode","Código de barras"],["none","Ninguno"]]],["qr","Contenido del QR (enlace de tu web, WhatsApp, Instagram...)","text"],["price","Texto junto al código (precio, Escanéame...)","text"],["b","Marca o web (pie de portada)","text"],["view","Dirección de la página de fotos (ver.html en tu GitHub Pages)","text"],["n","Segundos de cuenta regresiva","range",[1,9]],["logo","Logo del cliente (opcional)","file"],["pin","PIN de administrador (opcional, déjalo vacío para no usar)","text"]];
+["sec","Colores"],["mastColor","Color de la revista","color"],["nameColor","Color del nombre","color"],["accent","Color de acento","color"],["txt","Color de textos","color"],["ui","Color de botones y cuenta regresiva","color"],["numc","Color del número de la cuenta regresiva","color"],["bgc","Color de fondo de la pantalla","color"],["shade","Color del degradado sobre la foto","color"],["qrFg","Color de los puntos del QR (debe contrastar con su fondo)","color"],["qrBg","Color de fondo del QR (debe contrastar con los puntos)","color"],["th","Estilo del marco clásico","select",Object.keys(TH).map(k=>[k,TH[k].n])],
+["sec","Extras"],["cor","Código en la esquina de la portada","select",[["qr","Código QR"],["barcode","Código de barras"],["none","Ninguno"]]],["qr","Contenido del QR (enlace de tu web, WhatsApp, Instagram...)","text"],["price","Texto junto al código (precio, Escanéame...)","text"],["b","Marca o web (pie de portada)","text"],["fav","Emoji del ícono de la pestaña (favicon)","text"],["ptitle","Título de la pestaña del navegador","text"],["view","Dirección de la página de fotos (ver.html en tu GitHub Pages)","text"],["n","Segundos de cuenta regresiva","range",[1,9]],["logo","Logo del cliente (opcional)","file"],["pin","PIN de administrador (opcional, déjalo vacío para no usar)","text"]];
 const P=[["Blanco clásico",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#ffffff",txt:"#ffffff",mastFont:"Bodoni Moda",nameFont:"Bodoni Moda"}],
 ["Rojo editorial",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#ff3b57",txt:"#ffffff"}],
 ["Dorado lujo",{mastColor:"#f5dc8a",nameColor:"#fff4d0",accent:"#d9ad45",txt:"#ffffff"}],
 ["Rosa quinceañera",{mastColor:"#ffffff",nameColor:"#ffe6ec",accent:"#ff8fb3",txt:"#ffffff"}],
-["Corporativo azul",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#5ab0ff",txt:"#e8f2ff",mastFont:"Montserrat",nameFont:"Montserrat"}]];
+["Corporativo azul",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#5ab0ff",txt:"#e8f2ff",mastFont:"Montserrat",nameFont:"Montserrat"}],["Negro y plata",{mastColor:"#ffffff",nameColor:"#e6e9ee",accent:"#c9ced6",txt:"#ffffff",bgc:"#0a0a0c",shade:"#000000"}],["Esmeralda",{mastColor:"#ffffff",nameColor:"#eafff4",accent:"#3ddc97",txt:"#ffffff",bgc:"#04120c",shade:"#021a10"}],["Morado real",{mastColor:"#ffffff",nameColor:"#f5eaff",accent:"#c79bff",txt:"#ffffff",bgc:"#0d0716",shade:"#14062a"}],["Atardecer",{mastColor:"#fff4e6",nameColor:"#ffffff",accent:"#ff9f43",txt:"#ffffff",bgc:"#140a04",shade:"#2a0f00"}],["Bebé pastel",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#9fd8ff",txt:"#ffffff",bgc:"#0a1118",shade:"#0b2236"}]];
 function build(){
   const f=$("form");f.innerHTML="";
   F.forEach(r=>{
@@ -252,7 +254,7 @@ function build(){
     el.oninput=el.onchange=()=>{D[k]=t==="checkbox"?el.checked:t==="range"?+el.value:el.value;pvDraw()};
   });
   $("presets").innerHTML=P.map((p,i)=>"<button data-i='"+i+"'>"+p[0]+"</button>").join("");
-  $("presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{Object.assign(D,P[+b.dataset.i][1]);fill();pvDraw()});
+  $("presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{Object.assign(D,P[+b.dataset.i][1]);D.ui=D.accent;fill();pvDraw()});
 }
 function fill(){F.forEach(r=>{if(r[0]==="sec"||r[2]==="file")return;const el=$("f_"+r[0]);if(r[2]==="checkbox")el.checked=!!D[r[0]];else el.value=D[r[0]]})}
 function pvDraw(){
