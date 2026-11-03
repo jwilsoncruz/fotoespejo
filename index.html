@@ -38,7 +38,7 @@ button.main{background:var(--g);color:#111;font-weight:600}
 #gear{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:5;opacity:.2;padding:4px 10px;font-size:18px;letter-spacing:0;border:0;background:none}
 #gear:hover{opacity:.9;background:none;color:#fff}
 #msg{position:absolute;top:14%;left:5%;right:5%;font-size:3cqw;background:rgba(0,0,0,.75);padding:2cqw;border-radius:12px;display:none;z-index:3;text-align:center}
-#pimg{display:none}
+#pwrap{display:none}
 #admin{display:none;position:fixed;inset:0;z-index:20;background:#0e0e15;grid-template-columns:minmax(220px,340px) 1fr;gap:20px;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 16px;overflow:auto;font-size:14px;user-select:text}
 #admin .pvw{position:sticky;top:0;align-self:start}
 #pv{width:100%;border-radius:8px;border:1px solid #333;display:block}
@@ -54,7 +54,7 @@ button.main{background:var(--g);color:#111;font-weight:600}
 #pin input{font-size:20px;text-align:center;padding:9px;border-radius:8px;border:1px solid #444;background:#0c0c12;color:#fff}
 #pin button{font-size:12px;padding:10px}
 @media(max-width:760px){#admin{grid-template-columns:1fr}#admin .pvw{position:static;max-width:280px}}
-@media print{body>*{display:none!important}#pimg{display:block!important;width:100%}@page{margin:0}}
+@media print{html,body{background:#fff!important;overflow:visible!important}body>*{display:none!important}#pwrap{display:flex!important;width:100vw;height:100vh;align-items:center;justify-content:center}#pwrap img{display:block;height:100vh;width:100%;max-width:100%;object-fit:contain}#pwrap.dup img{width:50%}#pwrap:not(.dup) #pimg2{display:none}@page{margin:0}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 </head>
@@ -71,7 +71,7 @@ button.main{background:var(--g);color:#111;font-weight:600}
   <div class="layer" id="result"><img id="rimg" alt="Tu foto">
     <div class="bar"><div id="qrbox"><canvas id="qrc" hidden></canvas><span id="qrt"></span></div><div class="btns"><button id="again">Repetir</button><button id="print" class="main">Imprimir</button><button id="dl">Guardar</button></div></div></div>
 </div></div>
-<img id="pimg" alt="">
+<div id="pwrap"><img id="pimg" alt=""><img id="pimg2" alt=""></div>
 <div id="pin"><div><b>Administrador</b><input id="pi" type="password" placeholder="PIN"><span id="pe" style="color:#ff6b7a;font-size:12px"></span><button class="main" id="pok">Entrar</button><button id="pno">Cancelar</button></div></div>
 <div id="admin">
   <div class="pvw"><canvas id="pv" width="1080" height="1620"></canvas></div>
@@ -89,7 +89,7 @@ const FONTS=["Bodoni Moda","Playfair Display","DM Serif Display","Cormorant Gara
 const TH={oro:{n:"Oro clásico",g:["#fbefc0","#d9ad45","#8f6a22"],tx:"#fff8e6"},rosa:{n:"Rosa champán",g:["#ffe6ec","#f0a9bf","#b56580"],tx:"#fff3f6"},plata:{n:"Plata",g:["#ffffff","#cfd4dc","#7e8794"],tx:"#ffffff"},azul:{n:"Azul noche",g:["#e0efff","#86b5ea","#3a669f"],tx:"#f2f8ff"}};
 const def={tpl:"revista",t:"Tu nombre",head:"Mis XV años",date:"Abril 2027",tag:"Edición especial",mast:"LUXE",mastFont:"Bodoni Moda",mw:88,nameFont:"Bodoni Moda",dark:55,
  l1:"INOLVIDABLE|La noche que todos recordarán",l2:"GLAMOUR|Estilo y elegancia",l3:"15 AÑOS|Una historia que brilla",l4:"EXCLUSIVO|Solo en esta edición",
- mastColor:"#ffffff",nameColor:"#ffffff",accent:"#f2d27a",txt:"#ffffff",th:"oro",price:"Escanéame",cor:"qr",qr:"https://tu-sitio.com",view:"",fav:"📸",ptitle:"Fotoespejo",bgc:"#050507",ui:"#f2d27a",numc:"#ffffff",shade:"#000000",qrFg:"#000000",qrBg:"#ffffff",rot:"0",b:"",n:3,logo:"",pin:""};
+ mastColor:"#ffffff",nameColor:"#ffffff",accent:"#f2d27a",txt:"#ffffff",th:"oro",price:"Escanéame",cor:"qr",qr:"https://tu-sitio.com",view:"",fav:"📸",ptitle:"Fotoespejo",bgc:"#050507",ui:"#f2d27a",numc:"#ffffff",shade:"#000000",qrFg:"#000000",qrBg:"#ffffff",rot:"0",paper:"",dup:true,b:"",n:3,logo:"",pin:""};
 let S={...def};
 try{const s=localStorage.getItem("fe_cfg3");if(s)S={...def,...JSON.parse(s)}}catch(e){}
 let CUR=S,D={...S},admin=false,unlocked=false;
@@ -159,6 +159,7 @@ function drawFrame(x,W,H){
   x.fillStyle=sh;x.fillRect(0,H*.62,W,H*.38);frame(x,W,H,26,54);caption(x,W,H-300,120);
 }
 function drawOv(){const k=CUR;CUR=S;const c=$("ov"),x=c.getContext("2d");x.clearRect(0,0,c.width,c.height);drawFrame(x,c.width,c.height);CUR=k}
+function pageSize(){let st=document.getElementById("pgstyle");if(!st){st=document.createElement("style");st.id="pgstyle";document.head.appendChild(st)}st.textContent=S.paper?"@page{size:"+S.paper+";margin:0}":""}
 function rot(el,rt){
   const s=el.style;["width","height","top","left","inset","transform","transform-origin","position"].forEach(k=>s.removeProperty(k));
   if(rt===90||rt===270){s.position="fixed";s.inset="auto";s.top="0";s.left="0";s.width="100vh";s.height="100vw";s.transformOrigin="0 0";s.transform=rt===90?"translateX(100vw) rotate(90deg)":"translateY(100vh) rotate(-90deg)"}
@@ -167,7 +168,7 @@ function rot(el,rt){
 function fitBox(){const st=$("stage"),b=$("box"),w=st.clientWidth,h=st.clientHeight,bw=Math.min(w,h*2/3);b.style.maxWidth="none";b.style.width=bw+"px";b.style.height=(bw*1.5)+"px"}
 function applyRot(){const rt=+S.rot||0;rot($("stage"),rt);rot($("admin"),rt);rot($("pin"),rt);fitBox()}
 window.addEventListener("resize",fitBox);
-function apply(){const r=document.documentElement.style;r.setProperty("--g",S.ui);r.setProperty("--bgc",S.bgc);r.setProperty("--numc",S.numc);document.title=S.ptitle||"Fotoespejo";document.getElementById("ic").href="data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+(S.fav||"📸")+"</text></svg>");applyRot();drawOv()}
+function apply(){const r=document.documentElement.style;r.setProperty("--g",S.ui);r.setProperty("--bgc",S.bgc);r.setProperty("--numc",S.numc);document.title=S.ptitle||"Fotoespejo";document.getElementById("ic").href="data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+(S.fav||"📸")+"</text></svg>");applyRot();pageSize();drawOv()}
 apply();
 Promise.all(FONTS.flatMap(f=>['700 40px "'+f+'"','italic 700 40px "'+f+'"'].map(s=>document.fonts.load(s)))).then(()=>{drawOv();if(admin)pvDraw()}).catch(()=>{});
 const v=$("v");
@@ -221,7 +222,7 @@ async function run(mode){
     if(k<total-1)await sleep(900);
   }
   const out=mode==="strip"?strip(shots):single(shots[0]),url=out.toDataURL("image/jpeg",.92);
-  $("rimg").src=url;$("pimg").src=url;$("result").style.display="flex";subir(out);
+  $("rimg").src=url;$("pimg").src=url;$("pimg2").src=url;$("pwrap").classList.toggle("dup",mode==="strip"&&!!S.dup);$("result").style.display="flex";subir(out);
   clearTimeout(idle);idle=setTimeout(reset,75000);
 }
 function reset(){upTok++;clearTimeout(idle);$("result").style.display="none";$("start").style.display="flex";busy=false}
@@ -236,7 +237,7 @@ const F=[["sec","Evento"],["t","Nombre del agasajado o del evento corporativo","
 ["sec","Portada de revista"],["tpl","Plantilla","select",[["revista","Revista editorial"],["clasico","Clásico con marco"]]],["mast","Nombre de la revista","text"],["mastFont","Letra de la revista","select",FS],["mw","Ancho del título de la revista","range",[40,95]],["nameFont","Letra del nombre y titulares","select",FS],["dark","Oscurecer la foto (para leer mejor)","range",[0,90]],
 ["sec","Titulares (formato TÍTULO|descripción)"],["l1","Titular 1 (izquierda)","text"],["l2","Titular 2 (izquierda)","text"],["l3","Titular 3 (derecha)","text"],["l4","Titular 4 (derecha)","text"],
 ["sec","Colores"],["mastColor","Color de la revista","color"],["nameColor","Color del nombre","color"],["accent","Color de acento","color"],["txt","Color de textos","color"],["ui","Color de botones y cuenta regresiva","color"],["numc","Color del número de la cuenta regresiva","color"],["bgc","Color de fondo de la pantalla","color"],["shade","Color del degradado sobre la foto","color"],["qrFg","Color de los puntos del QR (debe contrastar con su fondo)","color"],["qrBg","Color de fondo del QR (debe contrastar con los puntos)","color"],["th","Estilo del marco clásico","select",Object.keys(TH).map(k=>[k,TH[k].n])],
-["sec","Extras"],["cor","Código en la esquina de la portada","select",[["qr","Código QR"],["barcode","Código de barras"],["none","Ninguno"]]],["qr","Contenido del QR (enlace de tu web, WhatsApp, Instagram...)","text"],["price","Texto junto al código (precio, Escanéame...)","text"],["b","Marca o web (pie de portada)","text"],["fav","Emoji del ícono de la pestaña (favicon)","text"],["ptitle","Título de la pestaña del navegador","text"],["view","Dirección de la página de fotos (ver.html en tu GitHub Pages)","text"],["n","Segundos de cuenta regresiva","range",[1,9]],["rot","Girar la pantalla (si el TV está en vertical y Windows no lo gira)","select",[["0","No girar"],["90","Girar 90° a la derecha"],["270","Girar 90° a la izquierda"],["180","Girar 180°"]]],["logo","Logo del cliente (opcional)","file"],["pin","PIN de administrador (opcional, déjalo vacío para no usar)","text"]];
+["sec","Extras"],["cor","Código en la esquina de la portada","select",[["qr","Código QR"],["barcode","Código de barras"],["none","Ninguno"]]],["qr","Contenido del QR (enlace de tu web, WhatsApp, Instagram...)","text"],["price","Texto junto al código (precio, Escanéame...)","text"],["b","Marca o web (pie de portada)","text"],["fav","Emoji del ícono de la pestaña (favicon)","text"],["ptitle","Título de la pestaña del navegador","text"],["view","Dirección de la página de fotos (ver.html en tu GitHub Pages)","text"],["n","Segundos de cuenta regresiva","range",[1,9]],["rot","Girar la pantalla (si el TV está en vertical y Windows no lo gira)","select",[["0","No girar"],["90","Girar 90° a la derecha"],["270","Girar 90° a la izquierda"],["180","Girar 180°"]]],["paper","Papel de impresión","select",[["","El que tenga la impresora por defecto"],["4in 6in","10 x 15 cm (4 x 6 pulgadas) vertical"],["A4","A4"],["letter","Carta"]]],["dup","Imprimir la tira dos veces en la hoja (para cortarla en 2)","checkbox"],["logo","Logo del cliente (opcional)","file"],["pin","PIN de administrador (opcional, déjalo vacío para no usar)","text"]];
 const P=[["Blanco clásico",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#ffffff",txt:"#ffffff",mastFont:"Bodoni Moda",nameFont:"Bodoni Moda"}],
 ["Rojo editorial",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#ff3b57",txt:"#ffffff"}],
 ["Dorado lujo",{mastColor:"#f5dc8a",nameColor:"#fff4d0",accent:"#d9ad45",txt:"#ffffff"}],
