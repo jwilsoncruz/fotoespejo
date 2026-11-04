@@ -16,7 +16,7 @@ video,#ov{position:absolute;inset:0;width:100%;height:100%}
 video{object-fit:cover;transform:scaleX(-1)}
 #ov{pointer-events:none}
 .layer{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-#start{justify-content:flex-end;padding-bottom:30cqw}
+#start{justify-content:flex-end;padding-bottom:var(--sp,30cqw)}
 #start .hi{font-family:"Playfair Display",Georgia,serif;font-style:italic;font-size:6cqw;text-shadow:0 2px 14px #000;margin-bottom:3.5cqw}
 #start .row{display:flex;gap:3cqw}
 button{font:inherit;font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:2.6cqw;padding:2.6cqw 5cqw;border-radius:99px;border:1.5px solid var(--g);background:rgba(10,10,14,.55);color:#fff;cursor:pointer;backdrop-filter:blur(8px);transition:.2s}
@@ -44,7 +44,7 @@ button.main{background:var(--g);color:#111;font-weight:600}
 .bar{display:flex;align-items:center;gap:3cqw;padding:2.5cqw 3cqw 3cqw}.btns{display:flex;gap:2cqw;flex-wrap:wrap;flex:1}#qrbox{width:25cqw;background:#fff;color:#111;border-radius:2cqw;padding:1.6cqw;display:flex;flex-direction:column;align-items:center;text-align:center}#qrbox canvas{width:100%;display:block}#qrbox span{font-size:2cqw;line-height:1.25;font-weight:600}
 #gear{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:5;opacity:.2;padding:4px 10px;font-size:18px;letter-spacing:0;border:0;background:none}
 #gear:hover{opacity:.9;background:none;color:#fff}
-#msg{position:absolute;top:14%;left:5%;right:5%;font-size:3cqw;background:rgba(0,0,0,.75);padding:2cqw;border-radius:12px;display:none;z-index:3;text-align:center}
+#msg{position:absolute;top:46%;left:5%;right:5%;font-size:3cqw;background:rgba(0,0,0,.75);padding:2cqw;border-radius:12px;display:none;z-index:3;text-align:center}
 #pwrap{display:none}
 #admin{display:none;position:fixed;inset:0;z-index:20;background:#0e0e15;grid-template-columns:minmax(220px,340px) 1fr;gap:20px;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 16px;overflow:auto;font-size:14px;user-select:text}
 #admin .pvw{position:sticky;top:0;align-self:start}
@@ -198,13 +198,13 @@ function rot(el,rt){
 function fitBox(){const st=$("stage"),b=$("box"),w=st.clientWidth,h=st.clientHeight,bw=Math.min(w,h*2/3);b.style.maxWidth="none";b.style.width=bw+"px";b.style.height=(bw*1.5)+"px"}
 function applyRot(){const rt=+S.rot||0;rot($("stage"),rt);rot($("admin"),rt);rot($("pin"),rt);fitBox()}
 window.addEventListener("resize",fitBox);
-function apply(){const r=document.documentElement.style;r.setProperty("--g",S.ui);r.setProperty("--bgc",S.bgc);r.setProperty("--numc",S.numc);document.title=S.ptitle||"Fotoespejo";document.getElementById("ic").href="data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+(S.fav||"📸")+"</text></svg>");applyRot();pageSize();$("start").classList.toggle("btnmode",S.trig==="button");$("hint").textContent=S.hint||"";$("start").classList.toggle("gest",!!S.gest);$("ghint").textContent=S.gtxt||"";if(S.gest)gestInit();drawOv()}
+function apply(){const r=document.documentElement.style;r.setProperty("--g",S.ui);r.setProperty("--sp",S.tpl==="revista"?"60cqw":"34cqw");r.setProperty("--bgc",S.bgc);r.setProperty("--numc",S.numc);document.title=S.ptitle||"Fotoespejo";document.getElementById("ic").href="data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+(S.fav||"📸")+"</text></svg>");applyRot();pageSize();$("start").classList.toggle("btnmode",S.trig==="button");$("hint").textContent=S.hint||"";$("start").classList.toggle("gest",!!S.gest);$("ghint").textContent=S.gtxt||"";if(S.gest)gestInit();drawOv()}
 apply();
 Promise.all(FONTS.flatMap(f=>['700 40px "'+f+'"','italic 700 40px "'+f+'"'].map(s=>document.fonts.load(s)))).then(()=>{drawOv();if(admin)pvDraw()}).catch(()=>{});
 const v=$("v");
 async function cam(){
-  try{v.srcObject=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1920},height:{ideal:1080},facingMode:"user"},audio:false})}
-  catch(e){const m=$("msg");m.style.display="block";m.textContent="No se pudo abrir la cámara. Permite el acceso en el navegador y recarga la página."}
+  try{v.srcObject=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1920},height:{ideal:1080},facingMode:"user"},audio:false});$("msg").style.display="none"}
+  catch(e){const m=$("msg"),n=e&&e.name;m.style.display="block";m.textContent=n==="NotFoundError"||n==="OverconstrainedError"?"No se encontró ninguna cámara. Conecta una webcam a la PC; se vuelve a intentar sola.":n==="NotReadableError"||n==="AbortError"?"La cámara está en uso por otro programa (Zoom, Meet, OBS u otra pestaña). Ciérralo; se vuelve a intentar sola.":"El navegador no tiene permiso para usar la cámara. Toca el ícono junto a la dirección, elige Permitir en Cámara y recarga la página.";if(n==="NotFoundError"||n==="NotReadableError"||n==="AbortError")setTimeout(cam,4000)}
 }
 cam();
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
