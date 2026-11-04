@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fotoespejo Premium</title>
 <link rel="icon" id="ic" href="data:,">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,700;1,700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,700;1,700&family=Cormorant+Garamond:ital,wght@0,700;1,700&family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,700&family=Great+Vibes&family=Fredoka:wght@500;700&family=Oswald:wght@500;700&display=swap">
 <style>
 :root{--g:#d9ad45;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -84,26 +84,26 @@ button.main{background:var(--g);color:#111;font-weight:600}
   <div class="pvw"><canvas id="pv" width="1080" height="1620"></canvas></div>
   <div>
     <h2>Panel de administrador</h2>
-    <div>Plantillas rápidas de color:</div>
+    <div><b>Paquetes por tipo de evento</b> (cambian la plantilla, los colores y los textos de ejemplo):</div><div id="packs"></div><div style="margin-top:10px">Plantillas rápidas de color (portada de revista):</div>
     <div id="presets"></div>
     <div id="form"></div>
-    <button class="main" id="a_ok">Guardar y volver</button><button id="a_no">Cancelar</button><button id="a_nl">Quitar logo</button><button id="a_fs">Pantalla completa</button><button id="a_rs">Restaurar valores</button>
+    <button class="main" id="a_ok">Guardar y volver</button><button id="a_no">Cancelar</button><button id="a_nl">Quitar logo</button><button id="a_lc">Sacar colores del logo</button><button id="a_fs">Pantalla completa</button><button id="a_rs">Restaurar valores</button>
   </div>
 </div>
 <script>
 const $=id=>document.getElementById(id);
-const FONTS=["Bodoni Moda","Playfair Display","DM Serif Display","Cormorant Garamond","Montserrat"];
+const FONTS=["Bodoni Moda","Playfair Display","DM Serif Display","Cormorant Garamond","Montserrat","Great Vibes","Fredoka","Oswald"];
 const TH={oro:{n:"Oro clásico",g:["#fbefc0","#d9ad45","#8f6a22"],tx:"#fff8e6"},rosa:{n:"Rosa champán",g:["#ffe6ec","#f0a9bf","#b56580"],tx:"#fff3f6"},plata:{n:"Plata",g:["#ffffff","#cfd4dc","#7e8794"],tx:"#ffffff"},azul:{n:"Azul noche",g:["#e0efff","#86b5ea","#3a669f"],tx:"#f2f8ff"}};
 const def={tpl:"revista",t:"Tu nombre",head:"Mis XV años",date:"Abril 2027",tag:"Edición especial",mast:"LUXE",mastFont:"Bodoni Moda",mw:88,nameFont:"Bodoni Moda",dark:55,
  l1:"INOLVIDABLE|La noche que todos recordarán",l2:"GLAMOUR|Estilo y elegancia",l3:"15 AÑOS|Una historia que brilla",l4:"EXCLUSIVO|Solo en esta edición",
- mastColor:"#ffffff",nameColor:"#ffffff",accent:"#f2d27a",txt:"#ffffff",th:"oro",price:"Escanéame",cor:"qr",qr:"https://tu-sitio.com",view:"",fav:"📸",ptitle:"Fotoespejo",bgc:"#050507",ui:"#f2d27a",numc:"#ffffff",shade:"#000000",qrFg:"#000000",qrBg:"#ffffff",rot:"0",paper:"",dup:true,trig:"touch",bmode:"single",hint:"Presiona el botón para tu foto",dbl:false,gest:false,ghold:1,gtxt:"👍 Pulgar arriba = 1 foto · ✌️ Paz (V) = tira de 3 fotos",b:"",n:3,logo:"",pin:""};
+ mastColor:"#ffffff",nameColor:"#ffffff",accent:"#f2d27a",txt:"#ffffff",th:"oro",price:"Escanéame",cor:"qr",qr:"https://tu-sitio.com",view:"",fav:"📸",ptitle:"Fotoespejo",bgc:"#050507",ui:"#f2d27a",numc:"#ffffff",shade:"#000000",qrFg:"#000000",qrBg:"#ffffff",rot:"0",paper:"",dup:true,trig:"touch",bmode:"single",hint:"Presiona el botón para tu foto",dbl:false,c1:"#0b4f9c",c2:"#f2b705",c3:"#ffffff",gest:false,ghold:1,gtxt:"👍 Pulgar arriba = 1 foto · ✌️ Paz (V) = tira de 3 fotos",b:"",n:3,logo:"",pin:""};
 let S={...def};
 try{const s=localStorage.getItem("fe_cfg3");if(s)S={...def,...JSON.parse(s)}}catch(e){}
 let CUR=S,D={...S},admin=false,unlocked=false;
 function save(){try{localStorage.setItem("fe_cfg3",JSON.stringify(S))}catch(e){}}
 const LC={};
 function logo(c){if(!c.logo)return null;let i=LC[c.logo];if(!i){i=new Image();i.onload=()=>{drawOv();if(admin)pvDraw()};i.src=c.logo;LC[c.logo]=i}return i.complete&&i.naturalWidth?i:null}
-const grad=(x,a,b,c,d)=>{const g=x.createLinearGradient(a,b,c,d),G=TH[CUR.th].g;g.addColorStop(0,G[0]);g.addColorStop(.5,G[1]);g.addColorStop(1,G[2]);return g};
+const grad=(x,a,b,c,d)=>{const g=x.createLinearGradient(a,b,c,d),G=(CUR.tpl&&CUR.tpl!=="clasico"&&CUR.tpl!=="revista")?[CUR.c1,CUR.c2,CUR.c1]:TH[CUR.th].g;g.addColorStop(0,G[0]);g.addColorStop(.5,G[1]);g.addColorStop(1,G[2]);return g};
 function txt(x,s,cx,y,font,fill,sp,mw,al){x.font=font;x.fillStyle=fill;x.textAlign=al||"center";x.textBaseline="middle";try{x.letterSpacing=(sp||0)+"px"}catch(e){}x.fillText(s,cx,y,mw||x.canvas.width-160);try{x.letterSpacing="0px"}catch(e){}}
 function fit(x,s,fam,sty,maxW,max){x.font=sty+" 700 100px '"+fam+"',serif";return Math.min(max,100*maxW/Math.max(1,x.measureText(s).width))}
 function barcode(x,x0,y0,label,seed,tc){
@@ -144,6 +144,113 @@ function drawMag(x,W,H){
   const L=logo(c);if(L){const r=Math.min(260/L.naturalWidth,90/L.naturalHeight),w=L.naturalWidth*r,h=L.naturalHeight*r;x.drawImage(L,W*.93-w,by+10,w,h)}
   if(c.b)txt(x,c.b.toUpperCase(),W*.93,H-70,sf,c.txt,5,W*.5,"right");
 }
+const lum=h=>{const n=parseInt(h.slice(1),16);return .299*(n>>16&255)+.587*(n>>8&255)+.114*(n&255)};
+const lite=c=>[c.c1,c.c2,c.c3].slice().sort((a,b)=>lum(b)-lum(a))[0];
+function shadeBot(x,W,H,from,a,c){const g=x.createLinearGradient(0,H*from,0,H);g.addColorStop(0,hx(c.shade,0));g.addColorStop(1,hx(c.shade,a));x.fillStyle=g;x.fillRect(0,H*from,W,H*(1-from))}
+function promoQR(x,c,o){
+  if(c.cor!=="qr"||!c.qr||typeof qrcode==="undefined")return;
+  try{const q=qrcode(0,"M");q.addData(c.qr);q.make();const n=q.getModuleCount(),cs=Math.max(3,Math.floor(130/n)),sz=n*cs;
+    x.fillStyle=c.qrBg;x.fillRect(o,o,sz+20,sz+20);x.fillStyle=c.qrFg;
+    for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(o+10+k*cs,o+10+r*cs,cs,cs);
+    if(c.price)txt(x,c.price,o+(sz+20)/2,o+sz+44,"600 22px Montserrat,sans-serif",c.txt,2,sz+80,"center")
+  }catch(e){}
+}
+function topLogo(x,W,c,o){
+  const L=logo(c);if(!L)return;const r=Math.min(260/L.naturalWidth,110/L.naturalHeight),w=L.naturalWidth*r,h=L.naturalHeight*r;
+  x.fillStyle="rgba(255,255,255,.92)";x.beginPath();x.roundRect(W-o-w-24,o,w+48,h+32,18);x.fill();x.drawImage(L,W-o-w,o+16,w,h);
+}
+function star(x,cx,cy,R,col){x.fillStyle=col;x.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?R*.45:R;x.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a))}x.closePath();x.fill()}
+function cap(x,cx,cy,s,col,col2){
+  x.fillStyle=col2;x.beginPath();x.moveTo(cx-s*.55,cy+s*.2);x.lineTo(cx-s*.55,cy+s*.62);x.quadraticCurveTo(cx,cy+s*.9,cx+s*.55,cy+s*.62);x.lineTo(cx+s*.55,cy+s*.2);x.lineTo(cx,cy+s*.35);x.closePath();x.fill();
+  x.fillStyle=col;x.beginPath();x.moveTo(cx,cy-s*.35);x.lineTo(cx+s,cy);x.lineTo(cx,cy+s*.35);x.lineTo(cx-s,cy);x.closePath();x.fill();
+  x.strokeStyle=col;x.lineWidth=6;x.beginPath();x.moveTo(cx+s*.85,cy+s*.05);x.lineTo(cx+s*.85,cy+s*.55);x.stroke();x.beginPath();x.arc(cx+s*.85,cy+s*.62,9,0,6.283);x.fill();
+}
+const TPL={
+corp(x,W,H,c){
+  shadeBot(x,W,H,.62,.45,c);
+  const bh=310;x.fillStyle=c.c1;x.fillRect(0,H-bh,W,bh);x.fillStyle=c.c2;x.fillRect(0,H-bh-14,W,14);
+  x.strokeStyle=c.c1;x.lineWidth=16;x.strokeRect(8,8,W-16,H-16);
+  promoQR(x,c,40);topLogo(x,W,c,40);
+  const T0=(c.t||"").toUpperCase(),ns=fit(x,T0,c.nameFont,"",W-140,100);
+  txt(x,T0,W/2,H-bh+95,"700 "+ns+"px '"+c.nameFont+"',sans-serif",c.nameColor,2,W-120);
+  txt(x,c.head||"",W/2,H-bh+175,"500 42px Montserrat,sans-serif",c.txt,1,W-120);
+  txt(x,[c.date,c.b].filter(Boolean).join("   |   ").toUpperCase(),W/2,H-70,"600 28px Montserrat,sans-serif",c.c3,5,W-100);
+},
+cumple(x,W,H,c){
+  let s=0;for(const ch of (c.t||"x"))s=(s*31+ch.charCodeAt(0))>>>0;const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};
+  const cols=[c.c1,c.c2,c.c3,"#ffffff"];
+  for(let i=0;i<80;i++){
+    const px=rnd()*W,py=rnd()*H,k=i%3,sz=16+rnd()*24,rt=rnd()*6.28;
+    if(px>W*.22&&px<W*.78&&py>H*.2&&py<H*.62)continue;
+    x.save();x.translate(px,py);x.rotate(rt);x.fillStyle=cols[i%4];
+    if(k===0){x.beginPath();x.arc(0,0,sz/2,0,6.283);x.fill()}else if(k===1)x.fillRect(-sz/2,-sz/4,sz,sz/2);else{x.beginPath();x.moveTo(0,-sz/2);x.lineTo(sz/2,sz/2);x.lineTo(-sz/2,sz/2);x.closePath();x.fill()}
+    x.restore();
+  }
+  shadeBot(x,W,H,.6,.55,c);
+  promoQR(x,c,48);topLogo(x,W,c,48);
+  x.fillStyle=c.c1;x.beginPath();x.roundRect(90,290,W-180,120,60);x.fill();x.strokeStyle="#fff";x.lineWidth=6;x.stroke();
+  const tg=c.tag||"¡Feliz cumpleaños!",ts=fit(x,tg,c.nameFont,"",W-300,76);
+  txt(x,tg,W/2,352,"700 "+ts+"px '"+c.nameFont+"',sans-serif","#ffffff",0,W-300);
+  const ns=fit(x,c.t||"",c.nameFont,"",W-200,170);
+  x.font="700 "+ns+"px '"+c.nameFont+"',sans-serif";x.textAlign="center";x.textBaseline="middle";x.lineJoin="round";x.lineWidth=16;x.strokeStyle=c.c1;x.strokeText(c.t||"",W/2,H-300,W-200);x.fillStyle=c.nameColor;x.fillText(c.t||"",W/2,H-300,W-200);
+  if(c.head){x.fillStyle=c.c2;x.beginPath();x.arc(W-190,H-545,95,0,6.283);x.fill();x.lineWidth=8;x.strokeStyle="#fff";x.stroke();txt(x,c.head,W-190,H-545,"700 "+fit(x,c.head,c.nameFont,"",150,100)+"px '"+c.nameFont+"',sans-serif","#ffffff",0,160)}
+  txt(x,[c.date,c.b].filter(Boolean).join("  ·  ").toUpperCase(),W/2,H-150,"600 30px Montserrat,sans-serif",c.txt,4,W-120);
+},
+boda(x,W,H,c){
+  shadeBot(x,W,H,.55,.8,c);
+  x.strokeStyle=c.c1;x.lineWidth=5;x.strokeRect(40,40,W-80,H-80);x.lineWidth=2;x.strokeRect(64,64,W-128,H-128);
+  [[64,64,1,1],[W-64,64,-1,1],[64,H-64,1,-1],[W-64,H-64,-1,-1]].forEach(([a,b,sx,sy])=>{
+    x.save();x.translate(a,b);x.scale(sx,sy);x.lineWidth=3;x.beginPath();x.arc(0,0,64,0,Math.PI/2);x.stroke();x.beginPath();x.arc(0,0,40,0,Math.PI/2);x.stroke();
+    x.fillStyle=c.c1;x.beginPath();x.moveTo(0,-12);x.lineTo(12,0);x.lineTo(0,12);x.lineTo(-12,0);x.closePath();x.fill();x.restore();
+  });
+  promoQR(x,c,96);topLogo(x,W,c,96);
+  txt(x,(c.tag||"").toUpperCase(),W/2,H-470,"500 30px Montserrat,sans-serif",c.c1,10,W-200);
+  const ns=fit(x,c.t||"",c.nameFont,"",W-220,230);
+  txt(x,c.t||"",W/2,H-340,"400 "+ns+"px '"+c.nameFont+"',cursive",c.nameColor,0,W-200);
+  x.strokeStyle=c.c1;x.lineWidth=2;x.beginPath();x.moveTo(W/2-200,H-235);x.lineTo(W/2-24,H-235);x.moveTo(W/2+24,H-235);x.lineTo(W/2+200,H-235);x.stroke();
+  x.save();x.translate(W/2,H-235);x.rotate(Math.PI/4);x.fillStyle=c.c1;x.fillRect(-8,-8,16,16);x.restore();
+  txt(x,(c.date||"").toUpperCase(),W/2,H-185,"500 36px Montserrat,sans-serif",c.txt,8,W-200);
+  txt(x,[c.head,c.b].filter(Boolean).join("  ·  "),W/2,H-130,"400 28px Montserrat,sans-serif",c.txt,2,W-200);
+},
+grad(x,W,H,c){
+  shadeBot(x,W,H,.55,.85,c);
+  x.fillStyle=c.c1;x.fillRect(0,0,38,H);x.fillStyle=c.c2;x.fillRect(38,0,18,H);x.fillStyle=c.c3;x.fillRect(56,0,8,H);
+  promoQR(x,c,96);topLogo(x,W,c,60);
+  cap(x,W/2,H-560,130,c.c2,c.c1);
+  const T0=(c.t||"").toUpperCase(),ns=fit(x,T0,c.nameFont,"",W-220,130);
+  txt(x,T0,W/2,H-380,"700 "+ns+"px '"+c.nameFont+"',sans-serif",c.nameColor,2,W-200);
+  txt(x,(c.head||"").toUpperCase(),W/2,H-290,"500 38px Montserrat,sans-serif",lite(c),6,W-200);
+  txt(x,(c.tag||"").toUpperCase(),W/2,H-215,"500 30px Montserrat,sans-serif",c.txt,6,W-200);
+  txt(x,[c.date,c.b].filter(Boolean).join("   |   ").toUpperCase(),W/2,H-130,"600 28px Montserrat,sans-serif",c.txt,4,W-200);
+},
+inst(x,W,H,c){
+  shadeBot(x,W,H,.5,.75,c);
+  [c.c1,c.c2,c.c3].forEach((col,i)=>{x.fillStyle=col;x.fillRect(0,i*14,W,14);x.fillRect(0,H-(i+1)*14,W,14)});
+  promoQR(x,c,70);
+  x.fillStyle="#fff";x.beginPath();x.arc(W/2,H-520,105,0,6.283);x.fill();x.lineWidth=10;x.strokeStyle=c.c1;x.stroke();
+  const L=logo(c);
+  if(L){const r=Math.min(150/L.naturalWidth,150/L.naturalHeight),w=L.naturalWidth*r,h=L.naturalHeight*r;x.drawImage(L,W/2-w/2,H-520-h/2,w,h)}
+  else{x.fillStyle=c.c2;x.beginPath();x.arc(W/2,H-520,62,0,6.283);x.fill();star(x,W/2,H-520,44,"#ffffff")}
+  const ns=fit(x,c.t||"",c.nameFont,"",W-160,100);
+  txt(x,c.t||"",W/2,H-360,"700 "+ns+"px '"+c.nameFont+"',serif",c.nameColor,0,W-140);
+  txt(x,(c.head||"").toUpperCase(),W/2,H-275,"500 38px Montserrat,sans-serif",lite(c),6,W-140);
+  x.strokeStyle=c.c1;x.lineWidth=3;x.beginPath();x.moveTo(W/2-120,H-225);x.lineTo(W/2+120,H-225);x.stroke();
+  txt(x,[c.date,c.b].filter(Boolean).join("   |   ").toUpperCase(),W/2,H-170,"600 28px Montserrat,sans-serif",c.txt,4,W-120);
+},
+kids(x,W,H,c){
+  const r=30;
+  for(let i=0;i*r*1.7<W+r;i++)[0,H].forEach(py=>{x.fillStyle=i%2?c.c1:c.c2;x.beginPath();x.arc(i*r*1.7,py,r,0,6.283);x.fill()});
+  for(let j=0;j*r*1.7<H+r;j++)[0,W].forEach(px=>{x.fillStyle=j%2?c.c1:c.c2;x.beginPath();x.arc(px,j*r*1.7,r,0,6.283);x.fill()});
+  let s=7;const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};
+  for(let i=0;i<16;i++){const px=80+rnd()*(W-160),py=100+rnd()*(H-640),R=18+rnd()*22;if(px>W*.22&&px<W*.78&&py>H*.2&&py<H*.55)continue;star(x,px,py,R,[c.c1,c.c2,c.c3][i%3])}
+  promoQR(x,c,70);topLogo(x,W,c,70);
+  x.fillStyle="rgba(255,255,255,.9)";x.beginPath();x.roundRect(70,H-430,W-140,340,60);x.fill();x.lineWidth=8;x.strokeStyle=c.c1;x.stroke();
+  const ns=fit(x,c.t||"",c.nameFont,"",W-260,150);
+  txt(x,c.t||"",W/2,H-320,"700 "+ns+"px '"+c.nameFont+"',sans-serif",c.nameColor,0,W-240);
+  txt(x,c.head||"",W/2,H-220,"500 44px '"+c.nameFont+"',sans-serif",c.c3,1,W-240);
+  txt(x,[c.date,c.b].filter(Boolean).join("  ·  "),W/2,H-140,"500 30px Montserrat,sans-serif",c.c3,2,W-240);
+}
+};
 function caption(x,W,y,lh){
   const c=CUR,G=TH[c.th],L=logo(c);
   if(L&&lh){const r=Math.min(360/L.naturalWidth,lh/L.naturalHeight),w=L.naturalWidth*r,h=L.naturalHeight*r;x.drawImage(L,W/2-w/2,y-h-50,w,h)}
@@ -162,6 +269,7 @@ function frame(x,W,H,o,i){
 }
 function drawFrame(x,W,H){
   if(CUR.tpl==="revista")return drawMag(x,W,H);
+  if(TPL[CUR.tpl])return TPL[CUR.tpl](x,W,H,CUR);
   const sh=x.createLinearGradient(0,H*.62,0,H);sh.addColorStop(0,"rgba(0,0,0,0)");sh.addColorStop(1,"rgba(0,0,0,.9)");
   x.fillStyle=sh;x.fillRect(0,H*.62,W,H*.38);frame(x,W,H,26,54);caption(x,W,H-300,120);
 }
@@ -198,7 +306,7 @@ function rot(el,rt){
 function fitBox(){const st=$("stage"),b=$("box"),w=st.clientWidth,h=st.clientHeight,bw=Math.min(w,h*2/3);b.style.maxWidth="none";b.style.width=bw+"px";b.style.height=(bw*1.5)+"px"}
 function applyRot(){const rt=+S.rot||0;rot($("stage"),rt);rot($("admin"),rt);rot($("pin"),rt);fitBox()}
 window.addEventListener("resize",fitBox);
-function apply(){const r=document.documentElement.style;r.setProperty("--g",S.ui);r.setProperty("--sp",S.tpl==="revista"?"60cqw":"34cqw");r.setProperty("--bgc",S.bgc);r.setProperty("--numc",S.numc);document.title=S.ptitle||"Fotoespejo";document.getElementById("ic").href="data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+(S.fav||"📸")+"</text></svg>");applyRot();pageSize();$("start").classList.toggle("btnmode",S.trig==="button");$("hint").textContent=S.hint||"";$("start").classList.toggle("gest",!!S.gest);$("ghint").textContent=S.gtxt||"";if(S.gest)gestInit();drawOv()}
+function apply(){const r=document.documentElement.style;r.setProperty("--g",S.ui);r.setProperty("--sp",S.tpl==="clasico"?"34cqw":"60cqw");r.setProperty("--bgc",S.bgc);r.setProperty("--numc",S.numc);document.title=S.ptitle||"Fotoespejo";document.getElementById("ic").href="data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+(S.fav||"📸")+"</text></svg>");applyRot();pageSize();$("start").classList.toggle("btnmode",S.trig==="button");$("hint").textContent=S.hint||"";$("start").classList.toggle("gest",!!S.gest);$("ghint").textContent=S.gtxt||"";if(S.gest)gestInit();drawOv()}
 apply();
 Promise.all(FONTS.flatMap(f=>['700 40px "'+f+'"','italic 700 40px "'+f+'"'].map(s=>document.fonts.load(s)))).then(()=>{drawOv();if(admin)pvDraw()}).catch(()=>{});
 const v=$("v");
@@ -276,15 +384,28 @@ $("dl").onclick=()=>{const a=document.createElement("a");a.href=$("rimg").src;a.
 /* ---------- ADMIN (#admin) ---------- */
 const FS=FONTS.map(f=>[f,f]);
 const F=[["sec","Evento"],["t","Nombre del agasajado o del evento corporativo","text"],["head","Línea bajo el nombre (ej: Mis XV años, Aniversario 10 años)","text"],["date","Fecha o edición","text"],["tag","Frase superior (opcional)","text"],
-["sec","Portada de revista"],["tpl","Plantilla","select",[["revista","Revista editorial"],["clasico","Clásico con marco"]]],["mast","Nombre de la revista","text"],["mastFont","Letra de la revista","select",FS],["mw","Ancho del título de la revista","range",[40,95]],["nameFont","Letra del nombre y titulares","select",FS],["dark","Oscurecer la foto (para leer mejor)","range",[0,90]],
+["sec","Portada de revista"],["tpl","Plantilla (diseño)","select",[["revista","Portada de revista"],["clasico","Clásico con marco dorado"],["corp","Empresa / evento corporativo"],["cumple","Cumpleaños / fiesta con confeti"],["boda","Boda elegante"],["grad","Graduación / promoción"],["inst","Institución / colegio / acto cívico"],["kids","Infantil: comunión, bautizo, baby shower"]]],["mast","Nombre de la revista","text"],["mastFont","Letra de la revista","select",FS],["mw","Ancho del título de la revista","range",[40,95]],["nameFont","Letra del nombre y titulares","select",FS],["dark","Oscurecer la foto (para leer mejor)","range",[0,90]],
 ["sec","Titulares (formato TÍTULO|descripción)"],["l1","Titular 1 (izquierda)","text"],["l2","Titular 2 (izquierda)","text"],["l3","Titular 3 (derecha)","text"],["l4","Titular 4 (derecha)","text"],
 ["sec","Colores"],["mastColor","Color de la revista","color"],["nameColor","Color del nombre","color"],["accent","Color de acento","color"],["txt","Color de textos","color"],["ui","Color de botones y cuenta regresiva","color"],["numc","Color del número de la cuenta regresiva","color"],["bgc","Color de fondo de la pantalla","color"],["shade","Color del degradado sobre la foto","color"],["qrFg","Color de los puntos del QR (debe contrastar con su fondo)","color"],["qrBg","Color de fondo del QR (debe contrastar con los puntos)","color"],["th","Estilo del marco clásico","select",Object.keys(TH).map(k=>[k,TH[k].n])],
-["sec","Extras"],["cor","Código en la esquina de la portada","select",[["qr","Código QR"],["barcode","Código de barras"],["none","Ninguno"]]],["qr","Contenido del QR (enlace de tu web, WhatsApp, Instagram...)","text"],["price","Texto junto al código (precio, Escanéame...)","text"],["b","Marca o web (pie de portada)","text"],["fav","Emoji del ícono de la pestaña (favicon)","text"],["ptitle","Título de la pestaña del navegador","text"],["view","Dirección de la página de fotos (ver.html en tu GitHub Pages)","text"],["n","Segundos de cuenta regresiva","range",[1,9]],["trig","¿Cómo se dispara la foto?","select",[["touch","Tocando la pantalla (botones en pantalla)"],["button","Con botón físico o control remoto (sin botones en pantalla)"]]],["bmode","Lo que hace el botón principal","select",[["single","Una foto"],["strip","Tira de 3 fotos"]]],["hint","Mensaje en la pantalla de inicio (modo botón)","text"],["dbl","Con un solo botón: pulsar dos veces rápido = tira de 3 fotos","checkbox"],["gest","Disparo por gestos con la cámara (pulgar arriba = 1 foto, V = tira de 3)","checkbox"],["ghold","Segundos que hay que mantener el gesto","range",[1,3]],["gtxt","Mensaje de gestos en la pantalla de inicio","text"],["rot","Girar la pantalla (si el TV está en vertical y Windows no lo gira)","select",[["0","No girar"],["90","Girar 90° a la derecha"],["270","Girar 90° a la izquierda"],["180","Girar 180°"]]],["paper","Papel de impresión","select",[["","El que tenga la impresora por defecto"],["4in 6in","10 x 15 cm (4 x 6 pulgadas) vertical"],["A4","A4"],["letter","Carta"]]],["dup","Imprimir la tira dos veces en la hoja (para cortarla en 2)","checkbox"],["logo","Logo del cliente (opcional)","file"],["pin","PIN de administrador (opcional, déjalo vacío para no usar)","text"]];
+["sec","Paleta de la marca (empresas, instituciones y eventos)"],["c1","Color principal","color"],["c2","Color secundario","color"],["c3","Color de apoyo","color"],["sec","Extras"],["cor","Código en la esquina de la portada","select",[["qr","Código QR"],["barcode","Código de barras"],["none","Ninguno"]]],["qr","Contenido del QR (enlace de tu web, WhatsApp, Instagram...)","text"],["price","Texto junto al código (precio, Escanéame...)","text"],["b","Marca o web (pie de portada)","text"],["fav","Emoji del ícono de la pestaña (favicon)","text"],["ptitle","Título de la pestaña del navegador","text"],["view","Dirección de la página de fotos (ver.html en tu GitHub Pages)","text"],["n","Segundos de cuenta regresiva","range",[1,9]],["trig","¿Cómo se dispara la foto?","select",[["touch","Tocando la pantalla (botones en pantalla)"],["button","Con botón físico o control remoto (sin botones en pantalla)"]]],["bmode","Lo que hace el botón principal","select",[["single","Una foto"],["strip","Tira de 3 fotos"]]],["hint","Mensaje en la pantalla de inicio (modo botón)","text"],["dbl","Con un solo botón: pulsar dos veces rápido = tira de 3 fotos","checkbox"],["gest","Disparo por gestos con la cámara (pulgar arriba = 1 foto, V = tira de 3)","checkbox"],["ghold","Segundos que hay que mantener el gesto","range",[1,3]],["gtxt","Mensaje de gestos en la pantalla de inicio","text"],["rot","Girar la pantalla (si el TV está en vertical y Windows no lo gira)","select",[["0","No girar"],["90","Girar 90° a la derecha"],["270","Girar 90° a la izquierda"],["180","Girar 180°"]]],["paper","Papel de impresión","select",[["","El que tenga la impresora por defecto"],["4in 6in","10 x 15 cm (4 x 6 pulgadas) vertical"],["A4","A4"],["letter","Carta"]]],["dup","Imprimir la tira dos veces en la hoja (para cortarla en 2)","checkbox"],["logo","Logo del cliente (opcional)","file"],["pin","PIN de administrador (opcional, déjalo vacío para no usar)","text"]];
 const P=[["Blanco clásico",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#ffffff",txt:"#ffffff",mastFont:"Bodoni Moda",nameFont:"Bodoni Moda"}],
 ["Rojo editorial",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#ff3b57",txt:"#ffffff"}],
 ["Dorado lujo",{mastColor:"#f5dc8a",nameColor:"#fff4d0",accent:"#d9ad45",txt:"#ffffff"}],
 ["Rosa quinceañera",{mastColor:"#ffffff",nameColor:"#ffe6ec",accent:"#ff8fb3",txt:"#ffffff"}],
 ["Corporativo azul",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#5ab0ff",txt:"#e8f2ff",mastFont:"Montserrat",nameFont:"Montserrat"}],["Negro y plata",{mastColor:"#ffffff",nameColor:"#e6e9ee",accent:"#c9ced6",txt:"#ffffff",bgc:"#0a0a0c",shade:"#000000"}],["Esmeralda",{mastColor:"#ffffff",nameColor:"#eafff4",accent:"#3ddc97",txt:"#ffffff",bgc:"#04120c",shade:"#021a10"}],["Morado real",{mastColor:"#ffffff",nameColor:"#f5eaff",accent:"#c79bff",txt:"#ffffff",bgc:"#0d0716",shade:"#14062a"}],["Atardecer",{mastColor:"#fff4e6",nameColor:"#ffffff",accent:"#ff9f43",txt:"#ffffff",bgc:"#140a04",shade:"#2a0f00"}],["Bebé pastel",{mastColor:"#ffffff",nameColor:"#ffffff",accent:"#9fd8ff",txt:"#ffffff",bgc:"#0a1118",shade:"#0b2236"}]];
+const PK=[
+["XV años",{tpl:"revista",t:"Tu nombre",head:"Mis XV años",tag:"Edición especial",date:"Abril 2027",mast:"LUXE",mastFont:"Bodoni Moda",nameFont:"Bodoni Moda",mastColor:"#ffffff",nameColor:"#ffe6ec",txt:"#ffffff",c1:"#ff8fb3",c2:"#c79bff",c3:"#ffe6ec",shade:"#000000",bgc:"#0b0710"}],
+["Boda",{tpl:"boda",t:"Ana & Luis",head:"#AnaYLuis2027",tag:"Nos casamos",date:"15 de mayo de 2027",nameFont:"Great Vibes",nameColor:"#fff8e6",txt:"#ffffff",c1:"#d9ad45",c2:"#ffffff",c3:"#ffffff",shade:"#000000",bgc:"#0a0907"}],
+["Cumpleaños",{tpl:"cumple",t:"Tu nombre",head:"30",tag:"¡Feliz cumpleaños!",date:"Fecha de la fiesta",nameFont:"Fredoka",nameColor:"#ffffff",txt:"#ffffff",c1:"#ff4f8b",c2:"#ffb703",c3:"#3ac7ff",shade:"#000000",bgc:"#0d0a14"}],
+["Graduación",{tpl:"grad",t:"Promoción 2027",head:"Nombre del colegio o universidad",tag:"Felicidades, graduados",date:"Diciembre 2027",nameFont:"Oswald",nameColor:"#ffffff",txt:"#ffffff",c1:"#0b3d91",c2:"#f2b705",c3:"#ffffff",shade:"#000000",bgc:"#050a14"}],
+["Aniversario de empresa",{tpl:"corp",t:"10 años juntos",head:"Nombre de la empresa",tag:"",date:"2027",b:"#Hashtag",nameFont:"Oswald",nameColor:"#ffffff",txt:"#ffffff",c1:"#0b4f9c",c2:"#f2b705",c3:"#ffffff",shade:"#000000",bgc:"#050a14"}],
+["Evento corporativo",{tpl:"corp",t:"Nombre del evento",head:"Nombre de la empresa",tag:"",date:"Fecha",b:"#Hashtag",nameFont:"Oswald",nameColor:"#ffffff",txt:"#e5e7eb",c1:"#111827",c2:"#22d3ee",c3:"#e5e7eb",shade:"#000000",bgc:"#05070c"}],
+["Fiesta de fin de año",{tpl:"cumple",t:"Nombre de la empresa",head:"2027",tag:"¡Felices fiestas!",date:"Diciembre 2026",nameFont:"Fredoka",nameColor:"#ffffff",txt:"#ffffff",c1:"#c62828",c2:"#2e7d32",c3:"#ffd54f",shade:"#000000",bgc:"#0a0a0a"}],
+["Colegio / unidad educativa",{tpl:"inst",t:"Unidad Educativa ...",head:"Aniversario 60 años",tag:"",date:"Fecha",nameFont:"Playfair Display",nameColor:"#ffffff",txt:"#ffffff",c1:"#0b3d91",c2:"#c8102e",c3:"#ffd100",shade:"#000000",bgc:"#050a14"}],
+["Acto cívico / institución pública",{tpl:"inst",t:"Nombre de la institución",head:"Acto conmemorativo",tag:"",date:"Fecha",nameFont:"Playfair Display",nameColor:"#ffffff",txt:"#ffffff",c1:"#d52b1e",c2:"#f9e300",c3:"#007a3d",shade:"#000000",bgc:"#050505"}],
+["Comunión / bautizo",{tpl:"kids",t:"Tu nombre",head:"Mi primera comunión",tag:"",date:"Fecha",nameFont:"Fredoka",nameColor:"#4b3f8f",txt:"#ffffff",c1:"#bcd8ff",c2:"#fff1b8",c3:"#6a5acd",shade:"#000000",bgc:"#0b0c14"}],
+["Baby shower",{tpl:"kids",t:"Baby ...",head:"Baby shower",tag:"",date:"Fecha",nameFont:"Fredoka",nameColor:"#6a4c93",txt:"#ffffff",c1:"#ffd1dc",c2:"#c8e6ff",c3:"#8e6bbf",shade:"#000000",bgc:"#100b12"}]
+];
 function build(){
   const f=$("form");f.innerHTML="";
   F.forEach(r=>{
@@ -304,6 +425,8 @@ function build(){
       rd.onload=()=>{const i=new Image();i.onload=()=>{const q=Math.min(1,500/i.width,250/i.height),c=document.createElement("canvas");c.width=i.width*q;c.height=i.height*q;c.getContext("2d").drawImage(i,0,0,c.width,c.height);D.logo=c.toDataURL("image/png");pvDraw()};i.src=rd.result};rd.readAsDataURL(fl)};return}
     el.oninput=el.onchange=()=>{D[k]=t==="checkbox"?el.checked:t==="range"?+el.value:el.value;pvDraw()};
   });
+  $("packs").innerHTML=PK.map((p,i)=>"<button data-i='"+i+"'>"+p[0]+"</button>").join("");
+  $("packs").querySelectorAll("button").forEach(b=>b.onclick=()=>{Object.assign(D,PK[+b.dataset.i][1]);D.accent=D.ui=D.c1;fill();pvDraw()});
   $("presets").innerHTML=P.map((p,i)=>"<button data-i='"+i+"'>"+p[0]+"</button>").join("");
   $("presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{Object.assign(D,P[+b.dataset.i][1]);D.ui=D.accent;fill();pvDraw()});
 }
@@ -330,6 +453,23 @@ $("a_no").onclick=()=>{location.hash=""};
 $("a_nl").onclick=()=>{D.logo="";pvDraw()};
 $("a_fs").onclick=()=>{try{document.documentElement.requestFullscreen()}catch(e){}};
 $("a_rs").onclick=()=>{D={...def};fill();pvDraw()};
+$("a_lc").onclick=()=>{
+  if(!D.logo){alert("Primero sube el logo del cliente.");return}
+  const im=new Image();im.onload=()=>{
+    const cv=document.createElement("canvas");cv.width=cv.height=48;const x=cv.getContext("2d");x.drawImage(im,0,0,48,48);
+    const d=x.getImageData(0,0,48,48).data,m={};
+    for(let k=0;k<d.length;k+=4){
+      if(d[k+3]<200)continue;const r=d[k],g=d[k+1],b=d[k+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+      if(mx>235&&mn>225)continue;if(mx<30)continue;
+      const key=(r>>5)+","+(g>>5)+","+(b>>5),o=m[key]=m[key]||{n:0,r:0,g:0,b:0};o.n++;o.r+=r;o.g+=g;o.b+=b;
+    }
+    const arr=Object.values(m).sort((a,b)=>b.n-a.n).map(o=>[o.r/o.n,o.g/o.n,o.b/o.n].map(Math.round)),pick=[];
+    for(const q of arr){if(pick.every(p=>Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])+Math.abs(p[2]-q[2])>110))pick.push(q);if(pick.length===3)break}
+    const hex=a=>"#"+a.map(v=>v.toString(16).padStart(2,"0")).join("");
+    if(pick[0]){D.c1=hex(pick[0]);D.accent=D.ui=D.c1}if(pick[1])D.c2=hex(pick[1]);if(pick[2])D.c3=hex(pick[2]);
+    fill();pvDraw();
+  };im.src=D.logo;
+};
 build();route();
 </script>
 </body>
