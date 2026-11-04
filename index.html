@@ -41,7 +41,7 @@ button.main{background:var(--g);color:#111;font-weight:600}
 #result{display:none;background:#08080b;justify-content:flex-start;animation:fade .7s}
 @keyframes fade{from{opacity:0}}
 #result img{flex:1;min-height:0;width:100%;object-fit:contain;padding:2cqw;box-sizing:border-box}
-.bar{display:flex;align-items:center;gap:3cqw;padding:2.5cqw 3cqw 3cqw}.btns{display:flex;gap:2cqw;flex-wrap:wrap;flex:1}#qrbox{width:25cqw;background:#fff;color:#111;border-radius:2cqw;padding:1.6cqw;display:flex;flex-direction:column;align-items:center;text-align:center}#qrbox canvas{width:100%;display:block}#qrbox span{font-size:2cqw;line-height:1.25;font-weight:600}
+.bar{display:flex;align-items:center;gap:3cqw;padding:2.5cqw 3cqw 3cqw}.btns{display:flex;gap:2.4cqw;flex-direction:column;flex:1}.btns button{width:100%}#qrbox{width:46cqw;background:#fff;color:#111;border-radius:2cqw;padding:1.6cqw;display:flex;flex-direction:column;align-items:center;text-align:center}#qrbox canvas{width:100%;display:block;image-rendering:pixelated}#qrbox span{font-size:2.6cqw;line-height:1.25;font-weight:600}
 #gear{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));right:10px;z-index:5;opacity:.2;padding:4px 10px;font-size:18px;letter-spacing:0;border:0;background:none}
 #gear:hover{opacity:.9;background:none;color:#fff}
 #msg{position:absolute;top:46%;left:5%;right:5%;font-size:3cqw;background:rgba(0,0,0,.75);padding:2cqw;border-radius:12px;display:none;z-index:3;text-align:center}
@@ -332,7 +332,7 @@ function strip(shots){
 const FB={p:"fotoespejo-13a05",k:"AIzaSyDV8jvpn1p-3IXoa1Im7dmPCJxU6JoXajk"};
 let upTok=0;
 function pack(cv){let q=.86,u;do{u=cv.toDataURL("image/jpeg",q);q-=.08}while(u.length>900000&&q>.3);return u}
-function drawQR(cv,text){const q=qrcode(0,"M");q.addData(text);q.make();const n=q.getModuleCount(),cs=Math.max(3,Math.floor(240/n)),m=cs*2,sz=n*cs+2*m;cv.width=cv.height=sz;const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,sz,sz);x.fillStyle="#000";for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(m+k*cs,m+r*cs,cs,cs)}
+function drawQR(cv,text){const q=qrcode(0,"L");q.addData(text);q.make();const n=q.getModuleCount(),cs=Math.max(4,Math.floor(400/n)),m=cs*3,sz=n*cs+2*m;cv.width=cv.height=sz;const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,sz,sz);x.fillStyle="#000";for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(m+k*cs,m+r*cs,cs,cs)}
 async function subir(cv){
   const tok=++upTok,qc=$("qrc"),t=$("qrt");qc.hidden=true;
   if(!S.view){t.textContent="Falta la dirección de la página de fotos (administrador)";return}
