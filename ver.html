@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tu foto</title>
+<link rel="icon" id="ic" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📸%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:ital,wght@1,700&display=swap">
 <style>
 :root{--g:#d9ad45}
@@ -35,7 +36,11 @@ const P="fotoespejo-13a05",K="AIzaSyDV8jvpn1p-3IXoa1Im7dmPCJxU6JoXajk",$=id=>doc
     if(!r.ok)throw new Error(r.status);
     const j=await r.json(),u=j.fields.img.stringValue,ev=j.fields.evento&&j.fields.evento.stringValue;
     $("im").src=u;$("im").hidden=false;$("st").hidden=true;
-    if(ev)$("ev").textContent=ev;
+    let evn=ev||"",fav="📸";const m=evn.match(/^(\p{Extended_Pictographic}(?:\uFE0F|\u200D|\p{Extended_Pictographic})*)\s+(.*)$/u);
+    if(m){fav=m[1];evn=m[2]}
+    $("ic").href="data:image/svg+xml,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+fav+"</text></svg>");
+    document.title=evn||"Tu foto";
+    if(evn)$("ev").textContent=(m?fav+" ":"")+evn;
     const blob=await (await fetch(u)).blob();
     $("dl").href=URL.createObjectURL(blob);
     $("acts").hidden=false;$("tip").hidden=false;
