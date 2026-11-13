@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de eventos · Fotoespejo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🗂️%3C/text%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{--g:#d9ad45}
+body{margin:0;background:#0e0e15;color:#fff;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:18px}
+h1{font-family:Georgia,serif;color:var(--g);margin:0 0 4px}
+button{font:inherit;font-size:12px;padding:8px 12px;border-radius:99px;border:1.5px solid var(--g);background:none;color:#fff;cursor:pointer;margin:2px}
+button:hover{background:var(--g);color:#111}button.main{background:var(--g);color:#111;font-weight:600}button.red{border-color:#d64545}button.red:hover{background:#d64545;color:#fff}
+input,select{font:inherit;padding:9px;border-radius:8px;border:1px solid #444;background:#0c0c12;color:#fff}
+.card{background:#16161f;border:1px solid #2a2a38;border-radius:12px;padding:14px;margin:10px 0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ev{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.ev b{font-size:15px}.mut{opacity:.65;font-size:12px}
+#login{max-width:340px;margin:12vh auto}#login input{width:100%;box-sizing:border-box;margin:5px 0}
+#err{color:#ff6b7a;font-size:12px;min-height:16px}
+#qrm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);align-items:center;justify-content:center;flex-direction:column;gap:10px}
+#qrm canvas{background:#fff;padding:14px;border-radius:10px;width:min(320px,80vw);image-rendering:pixelated}
+</style>
+</head>
+<body>
+<main>
+<div id="login" class="card"><h1>Central de eventos</h1><div class="mut">Entra con tu correo y contraseña de Firebase.</div>
+<input id="mail" type="email" placeholder="Correo" autocomplete="username"><input id="pass" type="password" placeholder="Contraseña" autocomplete="current-password"><div id="err"></div><button class="main" id="go">Entrar</button></div>
+<div id="app" hidden>
+<div class="row"><h1 style="flex:1">🗂️ Central de eventos</h1><button id="refresh">Actualizar lista</button><button id="out">Salir</button></div>
+<div class="mut" id="count"></div>
+<div class="card"><b>Nuevo evento</b>
+<div class="row" style="margin-top:8px"><input id="ncode" placeholder="código (ej: xv-dafne)" style="width:190px"><input id="nname" placeholder="nombre del evento" style="width:220px"><select id="ncopy"><option value="">Empezar desde cero</option></select><button class="main" id="ncreate">Crear</button></div>
+<div class="mut">El código solo puede tener letras minúsculas, números y guiones. Es lo que va en el enlace: .../?e=<b>código</b></div></div>
+<div id="list"></div>
+</div>
+</main>
+<div id="qrm"><canvas id="qrc"></canvas><div id="qrt" class="mut"></div><button id="qrx">Cerrar</button></div>
+<script>
+const P="fotoespejo-13a05",K="AIzaSyDV8jvpn1p-3IXoa1Im7dmPCJxU6JoXajk",ROOT="https://firestore.googleapis.com/v1/projects/"+P+"/databases/(default)/documents",$=id=>document.getElementById(id);
+const BASE=location.href.replace(/[?#].*$/,"").replace(/[^/]*$/,"");
+let AUTH=null,EV=[];
+async function signIn(email,password){
+  const r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+K,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password,returnSecureToken:true})});
+  const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
+  AUTH={t:j.idToken,r:j.refreshToken,exp:Date.now()+(+j.expiresIn-120)*1000};try{sessionStorage.setItem("fe_auth",JSON.stringify(AUTH))}catch(e){}
+}
+async function token(){
+  if(!AUTH){try{AUTH=JSON.parse(sessionStorage.getItem("fe_auth")||"null")}catch(e){}}
+  if(!AUTH)return null;
+  if(Date.now()>AUTH.exp){
+    try{const r=await fetch("https://securetoken.googleapis.com/v1/token?key="+K,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(AUTH.r)});
+      const j=await r.json();if(!r.ok)throw 0;AUTH={t:j.id_token,r:j.refresh_token,exp:Date.now()+(+j.expires_in-120)*1000};sessionStorage.setItem("fe_auth",JSON.stringify(AUTH))}
+    catch(e){AUTH=null;return null}
+  }
+  return AUTH.t;
+}
+async function api(method,url,body){
+  const t=await token();if(!t)throw new Error("sin sesión");
+  const r=await fetch(url,{method,headers:{"Content-Type":"application/json","Authorization":"Bearer "+t},body:body?JSON.stringify(body):undefined});
+  if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error((j.error&&j.error.message)||r.status)}
+  return method==="DELETE"?{}:r.json();
+}
+const ok=c=>/^[a-z0-9_-]{2,40}$/.test(c);
+const link=id=>BASE+"?e="+id;
+async function load(){
+  const out=[];let tk="";
+  do{const j=await api("GET",ROOT+"/eventos?pageSize=100"+(tk?"&pageToken="+encodeURIComponent(tk):""));(j.documents||[]).forEach(d=>out.push(d));tk=j.nextPageToken||""}while(tk);
+  EV=out.map(d=>{let cfg={};try{cfg=JSON.parse(d.fields.cfg.stringValue)}catch(e){}return{id:d.name.split("/").pop(),nombre:(d.fields.nombre&&d.fields.nombre.stringValue)||"(sin nombre)",tipo:(d.fields.tipo&&d.fields.tipo.stringValue)||"",cfg,upd:d.updateTime||""}}).sort((a,b)=>b.upd.localeCompare(a.upd));
+  render();
+}
+const TN={revista:"Revista",clasico:"Clásico",corp:"Empresa",cumple:"Cumpleaños",boda:"Boda",grad:"Graduación",inst:"Institución",kids:"Infantil"};
+function render(){
+  $("count").textContent=EV.length+" evento"+(EV.length===1?"":"s");
+  $("ncopy").innerHTML='<option value="">Empezar desde cero</option>'+EV.map(e=>"<option value='"+e.id+"'>Copiar de: "+e.id+"</option>").join("");
+  $("list").innerHTML=EV.map(e=>"<div class='card ev'><div><b>"+(e.cfg.fav||"")+" "+e.nombre+"</b> <span class='mut'>· código: "+e.id+" · "+(TN[e.tipo]||e.tipo)+(e.cfg.date?" · "+e.cfg.date:"")+"</span><div class='mut'>Actualizado: "+(e.upd?new Date(e.upd).toLocaleString():"")+"</div><div class='mut' style='word-break:break-all'>"+link(e.id)+"</div></div><div class='row' data-id='"+e.id+"'><button data-a='open' class='main'>Abrir</button><button data-a='cfg'>Configurar</button><button data-a='copy'>Copiar enlace</button><button data-a='qr'>QR</button><button data-a='dup'>Duplicar</button><button data-a='pics' class='red'>Borrar fotos</button><button data-a='del' class='red'>Eliminar</button></div></div>").join("")||"<div class='mut'>Todavía no hay eventos. Crea el primero arriba.</div>";
+}
+async function save(id,cfg,nombre,tipo){
+  const o={...cfg};delete o.pin;
+  await api("PATCH",ROOT+"/eventos/"+id,{fields:{cfg:{stringValue:JSON.stringify(o)},nombre:{stringValue:nombre||""},tipo:{stringValue:tipo||""}}});
+}
+async function delPics(id){
+  let total=0;
+  for(;;){
+    const r=await api("POST",ROOT+":runQuery",{structuredQuery:{from:[{collectionId:"fotos"}],where:{fieldFilter:{field:{fieldPath:"eid"},op:"EQUAL",value:{stringValue:id}}},select:{fields:[{fieldPath:"__name__"}]},limit:200}});
+    const docs=r.filter(x=>x.document).map(x=>x.document.name);if(!docs.length)break;
+    for(const n of docs){await api("DELETE","https://firestore.googleapis.com/v1/"+n);total++}
+  }
+  return total;
+}
+$("list").onclick=async e=>{
+  const b=e.target.closest("button");if(!b)return;const id=b.parentElement.dataset.id,ev=EV.find(x=>x.id===id),a=b.dataset.a;
+  try{
+    if(a==="open")window.open(link(id),"_blank");
+    else if(a==="cfg")window.open(link(id)+"#admin","_blank");
+    else if(a==="copy"){await navigator.clipboard.writeText(link(id));b.textContent="¡Copiado!";setTimeout(()=>b.textContent="Copiar enlace",1500)}
+    else if(a==="qr"){const q=qrcode(0,"L");q.addData(link(id));q.make();const n=q.getModuleCount(),cs=8,sz=n*cs+cs*6,c=$("qrc");c.width=c.height=sz;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,sz,sz);x.fillStyle="#000";for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(cs*3+k*cs,cs*3+r*cs,cs,cs);$("qrt").textContent=link(id);$("qrm").style.display="flex"}
+    else if(a==="dup"){const c=prompt("Código del evento nuevo (letras minúsculas, números y guiones):");if(!c)return;if(!ok(c))return alert("Código no válido.");await save(c,ev.cfg,ev.nombre,ev.tipo);await load()}
+    else if(a==="pics"){if(prompt("Se borrarán TODAS las fotos de este evento y no se pueden recuperar. Escribe el código del evento para confirmar: "+id)!==id)return;b.textContent="Borrando...";const n=await delPics(id);alert("Se borraron "+n+" fotos.");b.textContent="Borrar fotos"}
+    else if(a==="del"){if(prompt("Se eliminará la configuración del evento (las fotos no). Escribe el código para confirmar: "+id)!==id)return;await api("DELETE",ROOT+"/eventos/"+id);await load()}
+  }catch(err){alert("Error: "+err.message)}
+};
+$("ncreate").onclick=async()=>{
+  const c=$("ncode").value.trim().toLowerCase();if(!ok(c))return alert("El código solo puede tener letras minúsculas, números y guiones (2 a 40 caracteres).");
+  if(EV.some(x=>x.id===c))return alert("Ya existe un evento con ese código.");
+  try{const src=EV.find(x=>x.id===$("ncopy").value),cfg=src?{...src.cfg}:{};const nm=$("nname").value.trim();if(nm)cfg.t=nm;await save(c,cfg,nm||(src&&src.nombre)||c,cfg.tpl||"");$("ncode").value=$("nname").value="";await load()}catch(e){alert("Error: "+e.message)}
+};
+$("qrx").onclick=()=>$("qrm").style.display="none";
+$("refresh").onclick=()=>load().catch(e=>alert("Error: "+e.message));
+$("out").onclick=()=>{AUTH=null;try{sessionStorage.removeItem("fe_auth")}catch(e){}location.reload()};
+$("go").onclick=async()=>{$("err").textContent="";try{await signIn($("mail").value.trim(),$("pass").value);start()}catch(e){$("err").textContent="No se pudo entrar: "+e.message}};
+$("pass").addEventListener("keydown",e=>{if(e.key==="Enter")$("go").click()});
+async function start(){$("login").hidden=true;$("app").hidden=false;try{await load()}catch(e){$("list").innerHTML="<div class='card'>No se pudo cargar la lista: "+e.message+"<br><span class='mut'>Revisa que las reglas de Firestore estén actualizadas con tu correo.</span></div>"}}
+(async()=>{if(await token())start()})();
+</script>
+</body>
+</html>
